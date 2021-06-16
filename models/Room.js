@@ -45,7 +45,6 @@ class Room {
     this.players.forEach(player => {
       player.card = '';
       player.isWinner = false;
-      player.hand = [];
       if(player.isBot && !player.isCzar) {
         player.submitCard(this);
       }
@@ -78,7 +77,10 @@ class Room {
 
   endGame() {
     this.phase = 'waiting';
-    this.players.forEach(player => player.score = 0)
+    this.players.forEach(player => {
+      player.score = 0;
+      player.hand = [];
+    })
     this.broadcast('updatePhase', { phase: `waiting` });
     Store.updateWaitingRooms(this, true);
   }
