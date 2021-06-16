@@ -7,7 +7,7 @@ class Markov {
     // Converts file to bytes to string to array of words
     const words = fs.readFileSync('./sentences.txt').toString().toLowerCase().replace(/\./g, "").split(/\r\n| /);
     for(let i = 0; i < words.length - 4; i += 4) {
-      // Break words into two 2-word groups
+      // Break words into two 2-word groups (2-gram sequences)
       const group1 = `${words[i]} ${words[i + 1]}`;
       const group2 = `${words[i + 2]} ${words[i + 3]}`;
       // Add word to array if it exists in wordPairs

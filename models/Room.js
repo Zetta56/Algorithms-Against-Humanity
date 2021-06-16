@@ -45,6 +45,7 @@ class Room {
     this.players.forEach(player => {
       player.card = '';
       player.isWinner = false;
+      player.hand = [];
       if(player.isBot && !player.isCzar) {
         player.submitCard(this);
       }

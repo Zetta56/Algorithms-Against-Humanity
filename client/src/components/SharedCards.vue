@@ -66,6 +66,8 @@ export default {
     getResultColor: function (card) {
       if (this.winner && this.winner.id === card.id) {
         return { backgroundColor: '#bbedbd' }
+      } else {
+        return { border: '1px solid #222222' }
       }
     }
   }
