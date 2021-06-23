@@ -6,5 +6,6 @@ export default {
   error: null,
   rooms: [],
   room: null,
-  players: []
+  players: [],
+  chat: []
 }

@@ -7,7 +7,11 @@ class Bot extends Player {
   }
 
   submitCard(room) {
-    this.card = markov.generate(1, 3);
+    const index = Math.round(Math.random() * room.submitted.length)
+    room.submitted.splice(index, 0, {
+      text: markov.generate(1, 3),
+      id: this.id
+    })
     room.broadcast('updatePlayers', { players: room.players });
   }
 

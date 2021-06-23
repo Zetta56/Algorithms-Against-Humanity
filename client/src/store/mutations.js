@@ -25,5 +25,14 @@ export default {
   },
   updatePlayers (state, players) {
     state.players = players
+  },
+  updateChat (state, chat) {
+    state.chat = chat
+  },
+  addChat (state, message) {
+    state.chat.push(message)
+    if (state.chat.length > 10) {
+      state.chat.splice(0, 1)
+    }
   }
 }

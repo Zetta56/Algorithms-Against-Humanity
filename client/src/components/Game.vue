@@ -1,23 +1,8 @@
 <template>
-  <b-container class="game-container" ref="test">
-    <b-modal
-      id="scoreboard"
-      ref="scoreboard"
-      title="Scoreboard"
-      :hide-footer="true"
-      centered
-    >
-      <div v-for="player, index in players" :key="index" class="row">
-        <span class="username">
-          {{ player.username }} <b-icon-gem v-if="player.isCzar" />
-        </span>
-        <span class="score">{{ player.score }}</span>
-      </div>
-    </b-modal>
+  <b-container class="game-container">
     <div class="top-row">
-      <b-button variant="dark" class="scoreboard-button" v-b-modal.scoreboard>
-        Scoreboard
-      </b-button>
+      <Scoreboard />
+      <Chat />
     </div>
     <SharedCards />
     <Hand v-if="!userPlayer.isCzar" />
@@ -39,21 +24,24 @@
 import { mapState, mapGetters } from 'vuex'
 import Hand from './Hand'
 import SharedCards from './SharedCards'
+import Scoreboard from './Scoreboard'
+import Chat from './Chat'
 
 export default {
   components: {
+    Hand,
     SharedCards,
-    Hand
+    Scoreboard,
+    Chat
   },
   data: function () {
     return {
-      finished: false,
       prompt: 'Default Prompt'
     }
   },
   computed: {
     ...mapState(['websocket', 'user', 'room', 'hand', 'players']),
-    ...mapGetters(['userPlayer'])
+    ...mapGetters(['userPlayer', 'finished'])
   },
   methods: {
     startRound: function () {
@@ -67,16 +55,6 @@ export default {
         type: 'endGame',
         roomId: this.room.id
       }))
-    }
-  },
-  watch: {
-    '$store.state.players': function () {
-      this.players.forEach(player => {
-        if (player.score >= 3) {
-          this.$refs.scoreboard.show()
-          this.finished = true
-        }
-      })
     }
   }
 }
@@ -93,28 +71,12 @@ export default {
   margin: 10px 0;
 }
 
-.scoreboard-button {
+>>> .toggle {
   display: flex;
   align-items: center;
   padding: 0.5rem 0.75rem;
   font-size: 20px;
-}
-
->>> #scoreboard {
-  font-size: 20px;
-  align-items: center;
-}
-
->>> #scoreboard .modal-dialog {
-  width: 350px;
-}
-
->>> #scoreboard .row {
-  padding: 0.5rem 1rem;
-}
-
->>> #scoreboard .score {
-  margin-left: auto;
+  margin-right: 0.5rem;
 }
 
 .czar-message {

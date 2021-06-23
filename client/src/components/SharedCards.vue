@@ -12,7 +12,7 @@
     <slide>
       <div class="dark card">{{ room.prompt }}</div>
     </slide>
-    <slide v-for="card, index in submitted" :key="index">
+    <slide v-for="card, index in this.room.submitted" :key="index">
       <div v-if="room.phase === 'results'">
         <div class="results card" :style="getResultColor(card)">
           {{ card.text }}
@@ -42,16 +42,7 @@ export default {
   },
   computed: {
     ...mapState(['websocket', 'user', 'room', 'players']),
-    ...mapGetters(['userPlayer', 'winner']),
-    submitted: function () {
-      const cards = []
-      this.players.forEach(player => {
-        if (player.card !== '') {
-          cards.push({ text: player.card, id: player.id })
-        }
-      })
-      return cards
-    }
+    ...mapGetters(['userPlayer', 'winner'])
   },
   methods: {
     pickCard: function (id) {

@@ -8,5 +8,8 @@ export default {
   },
   winner: state => {
     return state.players.find(player => player.isWinner === true)
+  },
+  finished: state => {
+    return state.players.some(player => player.score >= 2)
   }
 }

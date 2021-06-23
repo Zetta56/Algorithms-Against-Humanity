@@ -1,5 +1,5 @@
 <template>
-  <div class="room-item-container">
+  <div class="room-item-container" @click="disableError()">
     <div v-b-toggle="`collapse-${index}`" @click="onRoomClick" class="top">
       <span class="access">
         <b-icon-lock-fill v-if="room.access === 'private'" />
@@ -9,7 +9,12 @@
       <span class="population">{{ population }}/4</span>
     </div>
     <b-collapse v-if="room.access === 'private'" :id="`collapse-${index}`" class="bottom">
-      <TextInput :onSubmit="joinPrivate" :text.sync="password" :placeholder="'Password'">
+      <TextInput
+        :onSubmit="joinPrivate"
+        :text.sync="password"
+        :placeholder="'Password'"
+        :class="{ red: error === 'deniedRoom' }"
+      >
         <template #prepend>
           <b-icon-arrow-return-right />
         </template>
@@ -19,7 +24,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 import TextInput from './TextInput'
 
 export default {
@@ -37,12 +42,13 @@ export default {
     }
   },
   computed: {
-    ...mapState(['websocket']),
+    ...mapState(['websocket', 'error']),
     population: function () {
       return Object.keys(this.room.players).length
     }
   },
   methods: {
+    ...mapActions(['updateError']),
     onRoomClick: function () {
       if (this.room.access === 'public') {
         this.websocket.send(JSON.stringify({
@@ -57,6 +63,11 @@ export default {
         roomId: this.room.id,
         password: this.password
       }))
+    },
+    disableError: function () {
+      if (this.error === 'deniedRoom') {
+        this.updateError('')
+      }
     }
   }
 }
@@ -74,5 +85,9 @@ export default {
 .population {
   float: right;
   letter-spacing: 2px;
+}
+
+.red {
+  border: 1px solid red;
 }
 </style>

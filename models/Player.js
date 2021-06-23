@@ -6,7 +6,6 @@ class Player {
     this.isCzar = false,
     this.isWinner = false,
     this.score = 0,
-    this.card = ''
     this.hand = []
   }
 

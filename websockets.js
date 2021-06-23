@@ -38,7 +38,7 @@ wss.on('connection', function connection(ws, req) {
           Store.getUser(id).roomId = room.id;
           room.broadcast('join', { room: room });
         } else {
-          ws.send(JSON.stringify({ type: 'failed', room: body.roomId }))
+          ws.send(JSON.stringify({ type: 'deniedRoom', room: body.roomId }))
         };
         break;
       }
@@ -63,27 +63,49 @@ wss.on('connection', function connection(ws, req) {
           Store.updateWaitingRooms(currentRoom, false);
         }
         currentRoom.resetState();
-        currentRoom.broadcast('startRound', { room: currentRoom });
+        currentRoom.broadcast('updateRoom', { room: currentRoom });
         break;
       }
 
-      case 'submitCard':
+      case 'submitCard': {
         // Move card from hand to played cards
         const foundPlayer = currentRoom.getPlayer(id);
-        foundPlayer.card = body.card;
-        foundPlayer.hand.splice(foundPlayer.hand.indexOf(body.card), 1);
-        currentRoom.broadcast('updatePlayers', {
-          players: currentRoom.players
-        });
+        const index = Math.round(Math.random() * currentRoom.submitted.length)
+        currentRoom.submitted.splice(index, 0, {
+          text: body.card.text,
+          id: foundPlayer.id
+        })
+        foundPlayer.hand.splice(body.card.index, 1);
+        currentRoom.broadcast('updateRoom', { room: currentRoom });
         currentRoom.checkPlayingFinished();
         break;
+      }
 
-      case 'pickCard':
+      case 'writeCard': {
+        // Move card from hand to played cards
+        const foundPlayer = currentRoom.getPlayer(id);
+        foundPlayer.hand[body.index].text = body.text;
+        ws.send(JSON.stringify({
+          type: 'updatePlayers',
+          players: currentRoom.players
+        }))
+        break;
+      }
+
+      case 'pickCard': {
         // Make picked card's owner the winner of the round
         const winner = currentRoom.players.find(player => {
           return player.id === body.winnerId
         });
         currentRoom.getCzar().pickWinner(currentRoom, winner);
+        break;
+      }
+
+      case 'sendChat':
+        currentRoom.broadcast('sendChat', {
+          text: body.text,
+          username: body.username
+        })
         break;
 
       case 'endGame':

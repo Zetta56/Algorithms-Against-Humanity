@@ -10,6 +10,7 @@ class Room {
     this.phase = 'waiting',
     this.prompt = '',
     this.players = [initialPlayer]
+    this.submitted = [] // Handles random ordering
   }
 
   getCzar() {
@@ -42,15 +43,25 @@ class Room {
     this.rotateCzar();
     this.phase = 'playing';
     this.prompt = markov.generate(2, 5, true);
+    this.submitted = []
     this.players.forEach(player => {
-      player.card = '';
       player.isWinner = false;
       if(player.isBot && !player.isCzar) {
         player.submitCard(this);
       }
       if(!player.isBot) {
         while(player.hand.length < 5) {
-          player.hand.push(markov.generate(1, 3, false));
+          if(Math.random() <= 0.66) {
+            player.hand.push({
+              text: markov.generate(1, 3, false),
+              custom: false
+            });
+          } else {
+            player.hand.push({
+              text: '',
+              custom: true
+            })
+          }
         }
       }
     });
@@ -66,9 +77,9 @@ class Room {
   }
 
   checkPlayingFinished() {
-    if(this.players.every(player => player.card !== '' || player.isCzar)) {
+    if(this.submitted.length === this.players.length - 1) {
       this.phase = 'picking';
-      this.broadcast('updatePhase', { phase: this.phase });
+      this.broadcast('updateRoom', { room: this });
       if(this.getCzar().isBot) {
         this.getCzar().pickWinner(this);
       }
@@ -86,11 +97,11 @@ class Room {
   }
 
   leave(userId) {
+    const message = this.getPlayer(userId).username + " has disconnected"
     // If player was the czar, set another player to be the czar
     if(this.getCzar() && this.getCzar().id === userId) {
       this.rotateCzar();
     }
-    
     this.removePlayer(userId);
     Store.getUser(userId).roomId = null;
 
@@ -98,8 +109,14 @@ class Room {
     if(this.players.filter(player => !player.isBot).length === 0) {
       Store.removeRoom(this);
     } else {
-      this.broadcast('leaveRoom', { players: this.players, id: userId });
-      this.checkPlayingFinished();
+      this.broadcast('leaveRoom', {
+        players: this.players,
+        id: userId,
+        message: message
+      });
+      if(this.phase !== 'waiting') {
+        this.checkPlayingFinished();
+      }
     }
   }
 };
