@@ -25,7 +25,7 @@ wss.on('connection', function connection(ws, req) {
         if(room.access === 'private') {
           Store.passwords[room.id] = body.password;
         }
-        ws.send(JSON.stringify({ type: 'join', room: room }));
+        ws.send(JSON.stringify({ type: 'joinRoom', room: room }));
         Store.updateWaitingRooms(room, true);
         break;
       }
@@ -36,7 +36,7 @@ wss.on('connection', function connection(ws, req) {
         if(room && (room.access === 'public' || body.password === Store.passwords[room.id])) {
           room.players.push(new Player(id, username, false));
           Store.getUser(id).roomId = room.id;
-          room.broadcast('join', { room: room });
+          room.broadcast('joinRoom', { room: room });
         } else {
           ws.send(JSON.stringify({ type: 'deniedRoom', room: body.roomId }))
         };
@@ -55,6 +55,11 @@ wss.on('connection', function connection(ws, req) {
         currentRoom.broadcast('updatePlayers', {
           players: currentRoom.players
         });
+        break;
+
+      case 'updateSettings':
+        currentRoom.settings[body.key] = body.value;
+        currentRoom.broadcast('updateRoom', { room: currentRoom })
         break;
 
       case 'startRound': {
@@ -101,8 +106,8 @@ wss.on('connection', function connection(ws, req) {
         break;
       }
 
-      case 'sendChat':
-        currentRoom.broadcast('sendChat', {
+      case 'addChat':
+        currentRoom.broadcast('addChat', {
           text: body.text,
           username: body.username
         })
@@ -129,7 +134,6 @@ wss.on('connection', function connection(ws, req) {
     // Remove user from store if they don't reconnect on another websocket
     if(user && user.ws.readyState === WebSocket.CLOSED) {
       user.disconnect = setTimeout(() => {
-        console.log('Disconnected')
         if(room) {
           room.leave(id);
         }

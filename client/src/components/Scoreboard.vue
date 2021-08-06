@@ -6,7 +6,7 @@
     <b-modal
       id="scoreboard"
       ref="scoreboard"
-      title="Scoreboard"
+      :title="titleMessage"
       :hide-footer="true"
       centered
     >
@@ -23,7 +23,14 @@ import { mapState } from 'vuex'
 
 export default {
   computed: {
-    ...mapState(['players'])
+    ...mapState(['room', 'players']),
+    titleMessage: function () {
+      let goal = this.room.settings.points
+      if (goal > 10000) {
+        goal = goal.toExponential()
+      }
+      return `Scoreboard (Goal: ${goal})`
+    }
   },
   watch: {
     '$store.getters.finished': function () {

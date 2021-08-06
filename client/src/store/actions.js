@@ -1,4 +1,5 @@
 export default {
+  // Methods directly accessible from components
   updateUser (context, user) {
     context.commit('updateUser', user)
   },
@@ -41,6 +42,7 @@ export default {
       }
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data)
+        // Routes that respond to websocket messages
         switch (data.type) {
           case 'connect': {
             if (data.reconnecting) {
@@ -51,7 +53,7 @@ export default {
             context.commit('updateLoading', false)
             break
           }
-          case 'join': {
+          case 'joinRoom': {
             const { players, ...room } = data.room
             if (!context.state.room) {
               context.commit('updateRoom', room)
@@ -82,7 +84,7 @@ export default {
           case 'updatePhase':
             context.commit('updatePhase', data.phase)
             break
-          case 'sendChat': {
+          case 'addChat': {
             const message = {
               text: data.text,
               username: data.username
@@ -91,10 +93,12 @@ export default {
             break
           }
           case 'leaveRoom':
+            // If user is leaving, clear room data
             if (data.id === context.state.user.id) {
               context.commit('updateRoom', null)
               context.commit('updatePlayers', [])
               context.commit('updateChat', [])
+            // Otherwise, notify user about another player leaving
             } else {
               context.commit('updatePlayers', data.players)
               context.commit('addChat', { text: data.message })

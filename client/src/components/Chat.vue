@@ -47,7 +47,7 @@ export default {
   methods: {
     onSubmit: function () {
       this.websocket.send(JSON.stringify({
-        type: 'sendChat',
+        type: 'addChat',
         text: this.message,
         username: this.user.username
       }))

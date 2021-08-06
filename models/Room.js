@@ -3,14 +3,18 @@ const Store = require('./Store');
 const markov = require('./Markov');
 
 class Room {
-  constructor(name, access, initialPlayer) {
+  constructor(name, access, player) {
     this.id = uuid(),
     this.name = name,
     this.access = access,
     this.phase = 'waiting',
     this.prompt = '',
-    this.players = [initialPlayer]
-    this.submitted = [] // Handles random ordering
+    this.players = [player]
+    this.submitted = [] // Handles random ordering of shown cards
+    this.settings = {
+      points: 5,
+      writeIn: 0.33
+    }
   }
 
   getCzar() {
@@ -51,16 +55,16 @@ class Room {
       }
       if(!player.isBot) {
         while(player.hand.length < 5) {
-          if(Math.random() <= 0.66) {
-            player.hand.push({
-              text: markov.generate(1, 3, false),
-              custom: false
-            });
-          } else {
+          if(Math.random() <= this.settings.writeIn) {
             player.hand.push({
               text: '',
               custom: true
             })
+          } else {
+            player.hand.push({
+              text: markov.generate(1, 3, false),
+              custom: false
+            });
           }
         }
       }
